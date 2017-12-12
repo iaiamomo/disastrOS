@@ -95,9 +95,10 @@ void DescriptorPtrList_print(ListHead* l){
   printf("[");
   while(aux){
     DescriptorPtr* d=(DescriptorPtr*)aux;
+    //correggo ordine delle stampe
     printf("(pid: %d, fd: %d, rid:%d)",
-	   d->descriptor->fd,
 	   d->descriptor->pcb->pid,
+       d->descriptor->fd,
 	   d->descriptor->resource->id);
     if(aux->next)
       printf(", ");

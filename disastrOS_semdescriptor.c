@@ -95,9 +95,10 @@ void SemDescriptorPtrList_print(ListHead* l){
   printf("[");
   while(aux){
     SemDescriptorPtr* d=(SemDescriptorPtr*)aux;
+    //correggo ordine stampa
     printf("(pid: %d, fd: %d, rid:%d)",
-	   d->descriptor->fd,
 	   d->descriptor->pcb->pid,
+       d->descriptor->fd,
 	   d->descriptor->semaphore->id);
     if(aux->next)
       printf(", ");
