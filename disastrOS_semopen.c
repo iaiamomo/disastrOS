@@ -7,16 +7,19 @@
 #include "disastrOS_semdescriptor.h"
 
 void internal_semOpen(){
-  //Recupero dal PCB tutte le informazioni necessarie all'apertura del semaforo
+  //Recupero dal PCB l'id del semaforo
   int id=running->syscall_args[0];
-  //int count=running->syscall_args[1];
-  //int open_mode=running->syscall_args[2];
+  int count = running->syscall_args[1]; //count viene considerato se e solo se il semaforo deve essere ancora creato
 
   Semaphore* sem=SemaphoreList_byId(&semaphores_list, id);
   
   //Se il semaforo ancora non era stato allocato, lo creo
    if (!sem) {
-    sem=Semaphore_alloc(id, 1);
+   	if (count < 1){ //se avessi un contatore < 1 bloccherei il sistema
+   		running->syscall_retvalue=DSOS_ERESOURCEOPEN;
+    	return;
+   	}
+    sem=Semaphore_alloc(id, count);
     List_insert(&semaphores_list, semaphores_list.last, (ListItem*) sem);
   }
 
@@ -26,14 +29,9 @@ void internal_semOpen(){
      return;
   }
   
-  /*if (open_mode&DSOS_EXCL && sem->descriptors.size){
-     running->syscall_retvalue=DSOS_ERESOURCENOEXCL;
-     return;
-  }*/
-
   
   //Creo il descrittore relativo al semaforo per il processo ed assegno il fd al semaforo
-  //Aggiunte alcune correzioni al PCB
+  //(Aggiunte alcune correzioni al PCB)
   SemDescriptor* des=SemDescriptor_alloc(running->last_sem_fd, sem, running);
   if (! des){
      running->syscall_retvalue=DSOS_ERESOURCENOFD;
