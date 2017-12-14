@@ -15,7 +15,7 @@ void internal_semOpen(){
   
   //Se il semaforo ancora non era stato allocato, lo creo
    if (!sem) {
-   	if (count < 1){ //se avessi un contatore < 1 bloccherei il sistema
+   	if (count < 0){ //se avessi un contatore < 0 bloccherei il sistema
    		running->syscall_retvalue=DSOS_ERESOURCEOPEN;
     	return;
    	}
