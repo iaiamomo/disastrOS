@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "disastrOS_semaphore.h"
-#include "disastrOS_descriptor.h"
+#include "disastrOS_semdescriptor.h" //includeva descriptor.h e il compilatore non trovava SemDescriptorPtrList_print
 #include "pool_allocator.h"
 #include "linked_list.h"
 
