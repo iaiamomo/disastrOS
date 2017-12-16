@@ -316,6 +316,9 @@ int disastrOS_semPost(int fd){
     return disastrOS_syscall(DSOS_CALL_SEMPOST, fd);
 }
 
+int disastrOS_semClose(int fd){
+    return disastrOS_syscall(DSOS_CALL_SEMCLOSE, fd);
+}
 
 void disastrOS_printStatus(){
   printf("****************** DisastrOS ******************\n");
