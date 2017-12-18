@@ -2,7 +2,8 @@ CC=gcc
 CCOPTS=--std=gnu99 -Wall 
 AR=ar
 
-HEADERS=disastrOS.h\
+HEADERS=fixed_size_message_queue.h\
+	disastrOS.h\
 	disastrOS_constants.h\
 	disastrOS_descriptor.h\
 	disastrOS_globals.h\
@@ -38,7 +39,8 @@ OBJS=pool_allocator.o\
      disastrOS_semopen.o\
      disastrOS_semclose.o\
      disastrOS_semwait.o\
-     disastrOS_sempost.o
+     disastrOS_sempost.o\
+     fixed_size_message_queue.o
 
 
 LIBS=libdisastrOS.a
