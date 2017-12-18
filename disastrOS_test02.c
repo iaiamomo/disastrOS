@@ -10,6 +10,8 @@
 #define SEM_FULL 0
 #define SEM_EMPTY 1
 #define THREAD_SEM 2
+#define NUM_PROD 10
+#define NUM_CONS 10
 
 typedef struct ThreadArgs{
   int type;
@@ -24,7 +26,7 @@ void sleeperFunction(void* args){
   printf("Hello, I am the sleeper, and I sleep %d\n",disastrOS_getpid());
   while(1) {
     getc(stdin);
-    disastrOS_printStatus();
+    //disastrOS_printStatus();
   }
 }
 void prodFunction(void* arg){
@@ -102,7 +104,7 @@ void consFunction(void* arg){
 }
 
 void initFunction(void* args) {
-  disastrOS_printStatus();
+  //disastrOS_printStatus();
   printf("hello, I am init and I just started\n");
   printf("DisastrOS spawning sleeper thread\n");
   disastrOS_spawn(sleeperFunction, 0);
@@ -112,22 +114,32 @@ void initFunction(void* args) {
   FixedSizeMessageQueue q;
   FixedSizeMessageQueue_init(&q, size_max, &sem_empty, &sem_full, &thread_sem);
 
-	ThreadArgs producer_args_template = {0, 0, 1, 10, &q};
+  ThreadArgs producer_args_template = {0, 0, 1, 10, &q};
   ThreadArgs consumer_args_template = {1, 0, 2, 10, &q};	
 	
-	int alive_children=0;
+  int alive_children=0;
+  ThreadArgs prodArgs[NUM_PROD];
   printf("DisastrOS spawning producers\n");
-  disastrOS_spawn(&prodFunction, (void*)&producer_args_template);
-  alive_children++;
+  for (int i = 0; i < NUM_PROD; i++){
+    prodArgs[i] = producer_args_template;
+    prodArgs[i].id = i;
+	disastrOS_spawn(&prodFunction, (void*)&prodArgs[i]);
+	alive_children++;
+  }
+  ThreadArgs consArgs[NUM_CONS];
   printf("DisastrOS spawning producers\n");
-	disastrOS_spawn(&consFunction, (void*)&consumer_args_template);
-  alive_children++;
+  for (int i = 0; i < 10; i++){
+    consArgs[i] = consumer_args_template;
+    consArgs[i].id = i;
+	disastrOS_spawn(&consFunction, (void*)&consArgs[i]);
+    alive_children++;
+  }
 
   disastrOS_printStatus();
   int retval;
   int pid;
   while(alive_children>0 && (pid=disastrOS_wait(0, &retval))>=0){ 
-    disastrOS_printStatus();
+    //disastrOS_printStatus();
     printf("initFunction, child: %d terminated, retval:%d, alive: %d \n",
 	   pid, retval, alive_children);
     --alive_children;
