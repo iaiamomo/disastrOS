@@ -32,7 +32,7 @@ void internal_semPost(){
         if(!sem_des_ptr){
             //se in waiting_descriptors non c'è nessuno, setto il valore di ritorno della semPost
             //e termino funzione
-            running-syscall_retvalue = 0;
+            running->syscall_retvalue = 0;
             return;
         }
         
@@ -41,7 +41,7 @@ void internal_semPost(){
         PCB* ready_process = sem_des->pcb;
         
         //rimuovo dalla waiting_list del sistema il processo da mettere in ready
-        PCB* ret = List_detach(&waiting_list, (ListItem*)ready_process)
+        PCB* ret = List_detach(&waiting_list, (ListItem*)ready_process);
         if(!ret){
             //se non trovo il processo da mettere in ready nella waiting_list del sistema
             //ho un grave errore
