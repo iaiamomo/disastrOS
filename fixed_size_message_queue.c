@@ -43,7 +43,7 @@ void FixedSizeMessageQueue_init(){
 				MAX_NUM_QUEUES,
 				_queue_buffer,
 				QUEUE_BUFFER_SIZE);
-  printf("res:%d\n",result);
+  //printf("res:%d\n",result);
   assert(! result);
 /*
   result=PoolAllocator_init(& _queue_ptr_allocator,

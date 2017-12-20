@@ -59,12 +59,6 @@ void initFunction(void* args) {
   printf("DisastrOS spawning 10 threads ready to access CS\n");
   int alive_children=0;
   for (int i=0; i<10; ++i) {
-    int type=0;
-    int mode=DSOS_CREATE;
-    printf("mode: %d\n", mode);
-    printf("opening resource (and creating if necessary)\n");
-    int fd=disastrOS_openResource(i,type,mode);
-    printf("fd=%d\n", fd);
     disastrOS_spawn(childFunction, 0);
     alive_children++;
   }

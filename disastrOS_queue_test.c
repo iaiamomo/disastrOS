@@ -57,7 +57,7 @@ void prodFunction(void* arg){
     sprintf(buf, "msg from %d, cycle: %d", args->id,i);
     //int length=strlen(buf);
     //char* msg=(char*)Message_alloc(buf);
-
+    //viene allocato nella pushBack
     
 
     FixedSizeMessageQueue_pushBack(args->queue, buf, sem_empty, sem_full, thread_sem);
@@ -111,7 +111,7 @@ void initFunction(void* args) {
   disastrOS_spawn(sleeperFunction, 0);
 
   //Dichiaro variabili utili alla coda di messaggi e la creo
-  int sem_empty, sem_full, thread_sem;
+  int sem_empty, sem_full, thread_sem;	//fd dei semafori, servono per la destroy
   FixedSizeMessageQueue* q = FixedSizeMessageQueue_alloc(&sem_empty, &sem_full, &thread_sem);
 
   ThreadArgs producer_args_template = {0, 0, 1, 10, q};
@@ -119,7 +119,7 @@ void initFunction(void* args) {
 
   int alive_children=0;
   ThreadArgs prodArgs[NUM_PROD];
-  printf("DisastrOS spawning producers\n");
+  printf("DisastrOS spawning %d producers\n", NUM_PROD);
   for (int i = 0; i < NUM_PROD; i++){
     prodArgs[i] = producer_args_template;
     prodArgs[i].id = i;
@@ -127,8 +127,8 @@ void initFunction(void* args) {
 	alive_children++;
   }
   ThreadArgs consArgs[NUM_CONS];
-  printf("DisastrOS spawning consumers\n");
-  for (int i = 0; i < 10; i++){
+  printf("DisastrOS spawning %d consumers\n", NUM_CONS);
+  for (int i = 0; i < NUM_CONS; i++){
     consArgs[i] = consumer_args_template;
     consArgs[i].id = i;
 	disastrOS_spawn(&consFunction, (void*)&consArgs[i]);

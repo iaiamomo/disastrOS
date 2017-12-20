@@ -53,13 +53,7 @@ void internal_semPost(){
         ready_process->status = Ready;
         
         //inserisco il processo nella ready_list del sistema
-        ret = List_insert(&ready_list, ready_list.last, (ListItem*)ready_process);
-        if(!ret){
-            //ho avuto problemi nell'inserire il processo nella ready_process del sistema
-            //ciò può essere dovuto al fatto che si trova in un altra coda
-            running->syscall_retvalue = DSOS_ERESOURCEINUSE;
-            return;
-        }
+        List_insert(&ready_list, ready_list.last, (ListItem*)ready_process);
     }
     
     //imposto il valore di ritorno della semPost
