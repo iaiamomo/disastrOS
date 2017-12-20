@@ -31,39 +31,38 @@ void sleeperFunction(void* args){
 }
 void prodFunction(void* arg){
   printf("prod:::%d started\n",disastrOS_getpid());
-	
+
 	ThreadArgs* args = (ThreadArgs*)arg;
 
   int thread_sem = disastrOS_semOpen(THREAD_SEM,-1);
   if(thread_sem<0){
     printf("prod:::%d could not open sem:%d\n",disastrOS_getpid(),THREAD_SEM);
-    disastrOS_exit(-1);  
+    disastrOS_exit(-1);
   }
 
 	int sem_empty = disastrOS_semOpen(SEM_EMPTY,-1);
   if(sem_empty<0){
     printf("prod:::%d could not open sem:%d\n",disastrOS_getpid(),SEM_EMPTY);
-    disastrOS_exit(-1);  
+    disastrOS_exit(-1);
   }
 
 	int sem_full = disastrOS_semOpen(SEM_FULL,-1);
   if(sem_full<0){
     printf("prod:::%d could not open sem:%d\n",disastrOS_getpid(),SEM_FULL);
-    disastrOS_exit(-1);  
+    disastrOS_exit(-1);
   }
 
   for (int i=0; i<args->cycles; ++i) {
-    char buf[1024];
+    char buf[MESSAGE_SIZE];
     sprintf(buf, "msg from %d, cycle: %d", args->id,i);
-    int length=strlen(buf);
-    char* msg=(char*)malloc(length);
-    strcpy(msg, buf);
+    //int length=strlen(buf);
+    //char* msg=(char*)Message_alloc(buf);
 
-    printf("INFO, PRODUCER  %d sending [%s] \n", args->id,msg);
-    
-    FixedSizeMessageQueue_pushBack(args->queue, msg, sem_empty, sem_full, thread_sem);
+    printf("INFO, PRODUCER  %d sending [%s] \n", args->id,buf);
+
+    FixedSizeMessageQueue_pushBack(args->queue, buf, sem_empty, sem_full, thread_sem);
     disastrOS_sleep(args->sleep_time);
-  }	
+  }
 
   printf("prod:::%d terminated\n",disastrOS_getpid());
   disastrOS_exit(disastrOS_getpid()+1);
@@ -71,31 +70,33 @@ void prodFunction(void* arg){
 
 void consFunction(void* arg){
   printf("cons:::%d started\n",disastrOS_getpid());
-	
+
 	ThreadArgs* args = (ThreadArgs*)arg;
 
   int thread_sem = disastrOS_semOpen(THREAD_SEM,-1);
   if(thread_sem<0){
     printf("cons:::%d could not open sem:%d\n",disastrOS_getpid(),THREAD_SEM);
-    disastrOS_exit(-1);  
+    disastrOS_exit(-1);
   }
 
 	int sem_empty = disastrOS_semOpen(SEM_EMPTY,-1);
   if(sem_empty<0){
     printf("cons:::%d could not open sem:%d\n",disastrOS_getpid(),SEM_EMPTY);
-    disastrOS_exit(-1);  
+    disastrOS_exit(-1);
   }
 
 	int sem_full = disastrOS_semOpen(SEM_FULL,-1);
   if(sem_full<0){
     printf("cons:::%d could not open sem:%d\n",disastrOS_getpid(),SEM_FULL);
-    disastrOS_exit(-1);  
+    disastrOS_exit(-1);
   }
 
   for (int i=0; i<args->cycles; ++i) {
     printf("INFO, CONSUMER  %d waiting\n", args->id);
     char* msg=FixedSizeMessageQueue_popFront(args->queue, sem_empty, sem_full, thread_sem);
     printf("INFO, CONSUMER  %d receiving [%s] \n", args->id,msg);
+    Message_free(msg);
+    //disastrOS_printStatus();
     disastrOS_sleep(args->sleep_time);
   }
 
@@ -108,15 +109,14 @@ void initFunction(void* args) {
   printf("hello, I am init and I just started\n");
   printf("DisastrOS spawning sleeper thread\n");
   disastrOS_spawn(sleeperFunction, 0);
-  
-  //Dichiaro variabili utili alla coda di messaggi e la creo
-  int sem_empty, sem_full, thread_sem, size_max = 10;
-  FixedSizeMessageQueue q;
-  FixedSizeMessageQueue_init(&q, size_max, &sem_empty, &sem_full, &thread_sem);
 
-  ThreadArgs producer_args_template = {0, 0, 1, 10, &q};
-  ThreadArgs consumer_args_template = {1, 0, 2, 10, &q};	
-	
+  //Dichiaro variabili utili alla coda di messaggi e la creo
+  int sem_empty, sem_full, thread_sem;
+  FixedSizeMessageQueue* q = FixedSizeMessageQueue_alloc(&sem_empty, &sem_full, &thread_sem);
+
+  ThreadArgs producer_args_template = {0, 0, 1, 10, q};
+  ThreadArgs consumer_args_template = {1, 0, 2, 10, q};
+
   int alive_children=0;
   ThreadArgs prodArgs[NUM_PROD];
   printf("DisastrOS spawning producers\n");
@@ -127,7 +127,7 @@ void initFunction(void* args) {
 	alive_children++;
   }
   ThreadArgs consArgs[NUM_CONS];
-  printf("DisastrOS spawning producers\n");
+  printf("DisastrOS spawning consumers\n");
   for (int i = 0; i < 10; i++){
     consArgs[i] = consumer_args_template;
     consArgs[i].id = i;
@@ -138,7 +138,7 @@ void initFunction(void* args) {
   disastrOS_printStatus();
   int retval;
   int pid;
-  while(alive_children>0 && (pid=disastrOS_wait(0, &retval))>=0){ 
+  while(alive_children>0 && (pid=disastrOS_wait(0, &retval))>=0){
     //disastrOS_printStatus();
     printf("initFunction, child: %d terminated, retval:%d, alive: %d \n",
 	   pid, retval, alive_children);
@@ -146,7 +146,7 @@ void initFunction(void* args) {
   }
 
   //Distruggo la coda di messaggi
-  FixedSizeMessageQueue_destroy(&q, sem_empty, sem_full, thread_sem);
+  FixedSizeMessageQueue_destroy(q, sem_empty, sem_full, thread_sem);
 
   printf("shutdown!");
   disastrOS_shutdown();
