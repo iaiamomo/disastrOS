@@ -58,7 +58,7 @@ void prodFunction(void* arg){
     //int length=strlen(buf);
     //char* msg=(char*)Message_alloc(buf);
 
-    printf("INFO, PRODUCER  %d sending [%s] \n", args->id,buf);
+    
 
     FixedSizeMessageQueue_pushBack(args->queue, buf, sem_empty, sem_full, thread_sem);
     disastrOS_sleep(args->sleep_time);

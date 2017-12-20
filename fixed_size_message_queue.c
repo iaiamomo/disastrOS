@@ -101,7 +101,8 @@ void FixedSizeMessageQueue_pushBack(FixedSizeMessageQueue*q,
   disastrOS_semWait(sem_empty_fd);
   disastrOS_semWait(thread_sem_fd);
   int tail_idx=(q->front_idx+q->size)%q->size_max;
-  char* message=(char*)Message_alloc(buf); //Il messaggio deve essere allocato in sezione critica,
+  char* message=(char*)Message_alloc(buf);
+  printf("INFO, PRODUCER sending [%s] \n",message); //Il messaggio deve essere allocato in sezione critica,
   q->messages[tail_idx]=message;			//così sono certo che ho blocchi liberi nel buffer
   ++q->size;
   disastrOS_semPost(thread_sem_fd);
