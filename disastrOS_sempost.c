@@ -26,7 +26,7 @@ void internal_semPost(){
     
     //controllo se il valore del contatore è <=0
     if(sem->count <= 0){
-        //se lo rimuovo il primo SemDescriptorPtr che si trova in waiting_descriptors del semaforo
+        //rimuovo il primo SemDescriptorPtr che si trova in waiting_descriptors del semaforo
         SemDescriptorPtr* sem_des_ptr = (SemDescriptorPtr*)List_detach(&sem->waiting_descriptors,
                                                                        sem->waiting_descriptors.first);
         if(!sem_des_ptr){
@@ -41,7 +41,7 @@ void internal_semPost(){
         PCB* ready_process = sem_des->pcb;
         
         //rimuovo dalla waiting_list del sistema il processo da mettere in ready
-        PCB* ret = List_detach(&waiting_list, (ListItem*)ready_process);
+        PCB* ret = (PCB*)List_detach(&waiting_list, (ListItem*)ready_process);
         if(!ret){
             //se non trovo il processo da mettere in ready nella waiting_list del sistema
             //ho un grave errore
