@@ -55,8 +55,6 @@ void prodFunction(void* arg){
   for (int i=0; i<args->cycles; ++i) {
     char buf[MESSAGE_SIZE];
     sprintf(buf, "msg from %d, cycle: %d", args->id,i);
-    //int length=strlen(buf);
-    //char* msg=(char*)Message_alloc(buf);
     //viene allocato nella pushBack
     
 
@@ -95,6 +93,8 @@ void consFunction(void* arg){
     printf("INFO, CONSUMER  %d waiting\n", args->id);
     char* msg=FixedSizeMessageQueue_popFront(args->queue, sem_empty, sem_full, thread_sem);
     printf("INFO, CONSUMER  %d receiving [%s] \n", args->id,msg);
+    // IMPORTANTE: altrimenti il messaggio rimarrebbe nel _message_buffer e dopo poco
+    // l'allocatore finirebbe la memoria disponibile per allocare i messaggi
     Message_free(msg);
     //disastrOS_printStatus();
     disastrOS_sleep(args->sleep_time);

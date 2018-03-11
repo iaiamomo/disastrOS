@@ -15,26 +15,26 @@
 #define THREAD_SEM 2
 
 #define QUEUE_SIZE (sizeof(FixedSizeMessageQueue))
-#define QUEUE_MEM_SIZE (QUEUE_SIZE+sizeof(int))
+#define QUEUE_MEM_SIZE ((QUEUE_SIZE)+sizeof(int))
 #define MAX_NUM_QUEUES 1
-#define QUEUE_BUFFER_SIZE (MAX_NUM_QUEUES * QUEUE_MEM_SIZE)
+#define QUEUE_BUFFER_SIZE ((MAX_NUM_QUEUES) * (QUEUE_MEM_SIZE))
 
 
 
 #define MESSAGE_BUFFER_SIZE ( (MAX_NUM_MESSAGES)*(MESSAGE_MEM_SIZE) )
 
-static char _queue_buffer[QUEUE_BUFFER_SIZE]; 	// area di memoria gestita da SO in cui il SO allocherà le code
-static PoolAllocator _queue_allocator;	      	// allocatore delle code
+// area di memoria gestita da SO in cui il SO allocherà le code
+static char _queue_buffer[QUEUE_BUFFER_SIZE];
 
-//static char _queue_ptr_buffer[QUEUEPTR_BUFFER_SIZE]; // area di memoria in cui il SO allocherà i puntatori alle code
-//static PoolAllocator _queue_ptr_allocator;           // allocatore dei puntatori alle code
+// allocatore delle code
+static PoolAllocator _queue_allocator;
 
+// area di memoria in cui il SO allocherà i messaggi
+static char _message_buffer[MESSAGE_BUFFER_SIZE];
 
-static char _message_buffer[MESSAGE_BUFFER_SIZE];	// area di memoria in cui il SO allocherà i messaggi
+// allocatore dei messaggi
 static PoolAllocator _message_allocator;
 
-//static char _message_ptr_buffer[MESSAGEPTR_BUFFER_SIZE];// area di memoria in cui il SO allocherà i puntatori dei messaggi
-//static PoolAllocator _message_ptr_allocator;
 
 
 void FixedSizeMessageQueue_init(){
@@ -43,30 +43,18 @@ void FixedSizeMessageQueue_init(){
 				MAX_NUM_QUEUES,
 				_queue_buffer,
 				QUEUE_BUFFER_SIZE);
-  //printf("res:%d\n",result);
   assert(! result);
-/*
-  result=PoolAllocator_init(& _queue_ptr_allocator,
-			    QUEUEPTR_SIZE,
-			    MAX_NUM_PROCESSES,
-			    _queue_ptr_buffer,
-			    QUEUEPTR_BUFFER_SIZE);
-  assert(! result);
-*/
+
+
+
   result=PoolAllocator_init(& _message_allocator,
 			    MESSAGE_SIZE,
 			    MAX_NUM_MESSAGES,
 			    _message_buffer,
 			    MESSAGE_BUFFER_SIZE);
   assert(! result);
-/*
-  result=PoolAllocator_init(& _message_ptr_allocator,
-			    MESSAGEPTR_SIZE,
-			    MAX_NUM_PROCESSES,
-			    _message_ptr_buffer,
-			    MESSAGEPTR_BUFFER_SIZE);
-  assert(! result);
-*/
+
+
 }
 
 char* Message_alloc(char*buf){
@@ -80,6 +68,10 @@ int Message_free(char* msg){
   return PoolAllocator_releaseBlock(&_message_allocator, msg);
 }
 
+// la struttura coda contiene tre semafori:
+// -> sem_empty: 	conta gli elementi liberi della coda
+// -> sem_full:  	conta gli elementi presenti nella coda
+// -> thread_sem_fd:garantisce la mutua esclusione
 FixedSizeMessageQueue* FixedSizeMessageQueue_alloc(int* sem_empty_fd, int* sem_full_fd, int* thread_sem_fd){
   FixedSizeMessageQueue* q=(FixedSizeMessageQueue*)PoolAllocator_getBlock(&_queue_allocator);
   //q->messages = (char**)malloc(size_max*sizeof(char*));

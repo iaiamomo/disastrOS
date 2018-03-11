@@ -85,7 +85,9 @@ void setupSignals(void) {
 
 
 
-
+// interfaccia per chiamare una qualsiasi syscall:
+// -> scrive gli argomenti nel pcb del processo chiamante
+// -> alza una trap (passaggio in modalita' kernel)
 int disastrOS_syscall(int syscall_num, ...) {
   assert(running); 
   va_list ap;
@@ -103,6 +105,11 @@ int disastrOS_syscall(int syscall_num, ...) {
   return running->syscall_retvalue;
 }
 
+
+// routine del SO per gestire le interruzioni:
+// -> esegue la syscall
+// -> mette in esecuzione il processo running (potrebbe essere lo stesso
+//    oppure un altro processo, dipende dalla specifica syscall)
 void disastrOS_trap(){
   int syscall_num=running->syscall_num;
   if (log_file)
@@ -140,6 +147,9 @@ void disastrOS_trap(){
   }
 }
 
+
+// inizializza tutte le strutture dati del kernel ed esegue la funzione 
+// passata come primo parametro
 void disastrOS_start(void (*f)(void*), void* f_args, char* logfile){  
   /* INITIALIZATION OF SYSTEM STRUCTURES*/
   disastrOS_debug("initializing system structures\n");
